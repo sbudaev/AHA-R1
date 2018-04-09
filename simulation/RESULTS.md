@@ -58,7 +58,7 @@ and increases with repeated generations.
   a generation.
 
 - Food items perform diel vertical migration in a pattern opposite to the
-  diel illumunation pattern.
+  diel illumination pattern.
 
   ![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-01.svg)
 
@@ -78,7 +78,7 @@ and increases with repeated generations.
 ## Basic results ##
 
 The agents evolving over one hundred generations exhibit a steadily increasing
-growth. The number of agents that wrew at the end of each generation showed
+growth. The number of agents that were at the end of each generation showed
 a steady increasing pattern.  The number of agents that were alive at the
 end of each generation reduced initially (up to generation 60), but started
 to rise with further generations (after generation 80).
@@ -143,7 +143,7 @@ that probably reflect changes of visibility and depth.
   self-awareness of the agents (their ability to assess and predict their
   emotional state) does not preclude evolutionary optimization.**
 
-- **Evolutionary adaptation of the agents in these conditions involve more
+- **Evolutionary adaptation of the agents in these conditions involves more
   efficient capture of food items, avoidance of predators and avoidance of
   conspecifics (reducing food competition).**
 
