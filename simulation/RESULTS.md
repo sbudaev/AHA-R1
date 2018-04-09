@@ -1,7 +1,10 @@
-# Reference model R1 #
-## Overview of the simulation results ##
+# Simulation Results for R1 #
 
-### A brief outline of the model ##
+This document provides a very brief description of simulation results. A
+single short simulation was performed without replicates. These results
+therefore can be used only for illustrative purposes.
+
+## A brief outline of the model ##
 
 The reference model **R1** implementing elementary self-awareness follows the
 simple mesopelagic fish system developed by (Giske et al., 2013, 2014). Here
@@ -43,7 +46,7 @@ stages of the evolution are much less complex, complexity is increasing as
 the evolution proceeds. For example, the life cycle is initially very short
 and increases with repeated generations.
 
-#### R1 Model characteristics ####
+### R1 Model characteristics ###
 
 - **This is a very short and limited simulation over 100 generation. It is
   used for simple illustrative purposes only.**
@@ -56,6 +59,7 @@ and increases with repeated generations.
 
 - Food items perform diel vertical migration in a pattern opposite to the
   diel illumunation pattern.
+
   ![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-01.svg)
 
 - The agents select all behaviours based on the minimum expected arousal
@@ -68,9 +72,10 @@ and increases with repeated generations.
   also changing according to
   [ga_mutat_adaptive](http://ahamodel.uib.no/doxydoc/classthe__population.html#a3dd42184e1f4e3cad9ef2d887c2c0286)
   function.
+
   ![Fig. 2](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-02.svg)
 
-### Basic results ###
+## Basic results ##
 
 The agents evolving over one hundred generations exhibit a steadily increasing
 growth. The number of agents that wrew at the end of each generation showed
@@ -80,7 +85,7 @@ to rise with further generations (after generation 80).
 
 ![Fig. 3](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-03.svg)
 
-#### Feeding and growth
+### Feeding and growth
 
 Due to the increasing optimization complexity caused by the lack of food
 replenishment within a generation, body length and the feeding rate of the
@@ -110,7 +115,7 @@ time steps at the last generation (100).
 It is clear that the agents eat out most of the food already during the
 first half of the life cycle.
 
-#### Predator avoidance
+### Predator avoidance
 
 With each new generation, predation success (numbe of agents killed per time
 step) reduced. Thus, the agents evolved more efficient predator avoidance
@@ -120,7 +125,7 @@ fluctuation. This might have several different interpretations.
 
 ![Fig. 7](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-07.svg)
 
-#### Response to conspecifics
+### Response to conspecifics
 
 The agents evolved avoidance of conspecifics, presumably to reduce food
 competition. Predator and conspecific perception had similar cyclic patterns
@@ -129,7 +134,7 @@ that probably reflect changes of visibility and depth.
 ![Fig. 8](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-08.svg)
 
 
-### General conclusions ###
+## General conclusions ##
 
 - **The AHA model results in a realistic adaptive evolution of the agents over
   the generations.**
@@ -142,7 +147,7 @@ that probably reflect changes of visibility and depth.
   efficient capture of food items, avoidance of predators and avoidance of
   conspecifics (reducing food competition).**
 
-### References ###
+## References ##
 
 - Aksnes, D. L., & Utne, A. C. W. (1997). A revised model of visual range in
   fish. Sarsia, 82(2), 137–147. http://doi.org/10.1080/00364827.1997.10413647
