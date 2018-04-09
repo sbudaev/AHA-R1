@@ -5,4 +5,4 @@ This code is distributed according to the
 
 ## Reference ##
 
-- [NU General Public License: https://www.gnu.org/licenses/gpl.html](https://www.gnu.org/licenses/gpl.html)
+- [GNU General Public License: https://www.gnu.org/licenses/gpl.html](https://www.gnu.org/licenses/gpl.html)
