@@ -68,7 +68,7 @@ and increases with repeated generations.
   also changing according to
   [ga_mutat_adaptive](http://ahamodel.uib.no/doxydoc/classthe__population.html#a3dd42184e1f4e3cad9ef2d887c2c0286)
   function.
-  ![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-02.svg)
+  ![Fig. 2](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-02.svg)
 
 ### Basic results ###
 
@@ -78,7 +78,7 @@ a steady increasing pattern.  The number of agents that were alive at the
 end of each generation reduced initially (up to generation 60), but started
 to rise with further generations (after generation 80).
 
-![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-03.svg)
+![Fig. 3](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-03.svg)
 
 #### Feeding and growth
 
@@ -86,7 +86,7 @@ Due to the increasing optimization complexity caused by the lack of food
 replenishment within a generation, body length and the feeding rate of the
 evolving agents stopped growing after approximately generation 30.
 
-![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-04.svg)
+![Fig. 4](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-04.svg)
 
 However, this was caused by efficient optimization--the agents were able
 to eat out almost all of the food available in the environment. This is
@@ -95,7 +95,7 @@ in the environment that were still available (not eaten) at the end of each
 generation. This plot also shows the average perceived number of food items
 by the agents.
 
-![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-05.svg)
+![Fig. 5](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-05.svg)
 
 Clearly, the agents were able to eat out nearly all food resource available
 to them in the environment. Thus, approximately after generation 40, their
@@ -105,7 +105,7 @@ The following plot shows the pattern of food consumption (feeding rate,
 the number of food items eaten at each time step per alive agents) over the
 time steps at the last generation (100).
 
-![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-06.svg)
+![Fig. 6](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-06.svg)
 
 It is clear that the agents eat out most of the food already during the
 first half of the life cycle.
@@ -118,7 +118,7 @@ tactics. The predator perception by the agents (number of predators that they
 see) also showed a reducing pattern, but there was a significant sigmoidal
 fluctuation. This might have several different interpretations.
 
-![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-07.svg)
+![Fig. 7](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-07.svg)
 
 #### Response to conspecifics
 
@@ -126,7 +126,7 @@ The agents evolved avoidance of conspecifics, presumably to reduce food
 competition. Predator and conspecific perception had similar cyclic patterns
 that probably reflect changes of visibility and depth.
 
-![Fig. 1](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-08.svg)
+![Fig. 8](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-08.svg)
 
 
 ### General conclusions ###
