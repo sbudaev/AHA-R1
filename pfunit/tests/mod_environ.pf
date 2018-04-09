@@ -1,0 +1,1216 @@
+! ==============================================================================
+! SIMPLE TESTS
+! ==============================================================================
+
+@test
+subroutine test_dist_offset()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_ENVIRONMENT
+
+    implicit none
+
+    type(SPATIAL) :: obja, objb, objc
+
+    obja = SPATIAL( 6., 6., 1. )
+    objb = SPATIAL( 1., 1., 1. )
+    objc = offset_dist(obja, objb, 2.0)
+    @assertEqual( 2.0,  objb%distance(objc), ZERO*100.0 )
+
+    obja = SPATIAL(  6.,  6., 14. )
+    objb = SPATIAL( 21., 21., 10. )
+    objc = offset_dist(obja, objb, 4.0)
+    @assertEqual( 4.0,  objb%distance(objc), ZERO*100.0 )
+
+end subroutine test_dist_offset
+
+! ==============================================================================
+! MORE COMPLEX TESTS
+! ==============================================================================
+
+@test
+subroutine test_init_population_objects()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test
+    type(POPULATION) :: population_test
+
+    @assertEqual(100.0, 100.0)
+
+end subroutine test_init_population_objects
+
+! ==============================================================================
+! TEST JOIN/UNJOIN procedures for FOOD_RESOURCE
+! ==============================================================================
+
+@test
+subroutine test_join_food_res_model_based_list()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2
+    type(FOOD_RESOURCE) :: joined_food_res1
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Safe",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_DANGER_MIN_COORD(1),   &
+                                               HABITAT_DANGER_MIN_COORD(2),   &
+                                               HABITAT_DANGER_MIN_COORD(3) ), &
+                            coord_max=SPATIAL( HABITAT_DANGER_MAX_COORD(1),   &
+                                               HABITAT_DANGER_MAX_COORD(2),   &
+                                               HABITAT_DANGER_MAX_COORD(3) ), &
+                            label="Dangerous",                                &
+                            predators_number=PREDATORS_NUM_HABITAT_DANGER,    &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_DANGER )
+
+    if (allocated(Global_Habitats_Available)) then
+      deallocate(Global_Habitats_Available)
+      allocate(Global_Habitats_Available(2))
+    else
+      allocate(Global_Habitats_Available(2))
+    end if
+
+    Global_Habitats_Available = [habitat_test1, habitat_test2]
+
+    !---------------------------------------------------------------------------
+    ! Test list-based subroutine.
+    !---------------------------------------------------------------------------
+
+    call joined_food_res1%join( habitat_test1%food,                           &
+                                habitat_test2%food,                           &
+                                reindex=.TRUE. )
+
+    ! Test array sizes .........................................................
+
+    t_int1 = size(joined_food_res1%food)
+    t_int2 = size(habitat_test1%food%food) + size(habitat_test2%food%food)
+
+    @assertEqual( t_int1, t_int2, "SUB: Unequal sizes of arrays" )
+
+    t_value1 = habitat_test1%food%food(1)%size
+    t_value2 = joined_food_res1%food(1)%size
+    @assertEqual( t_value1, t_value2, "SUB: First elements not matching" )
+
+    t_value1 = habitat_test2%food%food(1)%size
+    t_value2 = joined_food_res1%food(size(habitat_test1%food%food)+1)%size
+    @assertEqual( t_value1, t_value2, "SUB: First shift mismatch" )
+
+    ! Test subarrays ..........................................................
+
+    t_array1 = joined_food_res1%food( 1:size(habitat_test1%food%food) )%size
+    t_array2 = habitat_test1%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 1 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+1 :                                     &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food) )%size
+    t_array2 = habitat_test2%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 2 differ" )
+
+end subroutine test_join_food_res_model_based_list
+
+@test
+subroutine test_join_food_res_model_based_array()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2
+    type(FOOD_RESOURCE) :: joined_food_res2
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Safe",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_DANGER_MIN_COORD(1),   &
+                                               HABITAT_DANGER_MIN_COORD(2),   &
+                                               HABITAT_DANGER_MIN_COORD(3) ), &
+                            coord_max=SPATIAL( HABITAT_DANGER_MAX_COORD(1),   &
+                                               HABITAT_DANGER_MAX_COORD(2),   &
+                                               HABITAT_DANGER_MAX_COORD(3) ), &
+                            label="Dangerous",                                &
+                            predators_number=PREDATORS_NUM_HABITAT_DANGER,    &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_DANGER )
+
+    ! if (allocated(Global_Habitats_Available)) then
+    !   deallocate(Global_Habitats_Available)
+    !   allocate(Global_Habitats_Available(2))
+    ! else
+    !   allocate(Global_Habitats_Available(2))
+    ! end if
+
+    ! Global_Habitats_Available = [habitat_test1, habitat_test2]
+    call assemble ( habitat_test1, habitat_test2 )
+
+    !---------------------------------------------------------------------------
+    ! Test array-based function.
+    ! Test implicit food resources array, data from Global_Habitats_Available.
+    !---------------------------------------------------------------------------
+
+    joined_food_res2 = join( reindex=.TRUE. )
+
+    t_int1 = size(joined_food_res2%food)
+    t_int2 = size(habitat_test1%food%food) + size(habitat_test2%food%food)
+
+    @assertEqual( t_int1, t_int2, "FUNC_NOPAR: Unequal sizes of arrays" )
+
+    ! Test some values .........................................................
+
+    t_value1 = habitat_test1%food%food(1)%size
+    t_value2 = joined_food_res2%food(1)%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR: First vals not matching" )
+
+    t_value1 = habitat_test2%food%food(1)%size
+    t_value2 = joined_food_res2%food(size(habitat_test1%food%food)+1)%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR: First shift mismatch" )
+
+    t_value1 = habitat_test2%food%food( size(habitat_test2%food%food) )%size
+    t_value2 = joined_food_res2%food( size(joined_food_res2%food) )%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR: Last shift mismatch" )
+
+    ! Test subarrays ..........................................................
+
+    t_array1 = joined_food_res2%food( 1:size(habitat_test1%food%food) )%size
+    t_array2 = habitat_test1%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 1 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+1 :                                     &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food) )%size
+    t_array2 = habitat_test2%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 2 differ" )
+
+end subroutine test_join_food_res_model_based_array
+
+@test
+subroutine test_join_food_res_nonoverlap_list()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2, habitat_test3, habitat_test4
+    type(FOOD_RESOURCE) :: joined_food_res1
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab1",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab2",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test3%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab3",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test4%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab4",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    !---------------------------------------------------------------------------
+    ! Test list-based subroutine.
+    !---------------------------------------------------------------------------
+
+    call joined_food_res1%join( habitat_test1%food,                           &
+                                habitat_test2%food,                           &
+                                habitat_test3%food,                           &
+                                habitat_test4%food,                           &
+                                reindex=.TRUE. )
+
+    ! Test array sizes .........................................................
+
+    t_int1 = size(joined_food_res1%food)
+    t_int2 = size(habitat_test1%food%food) +                                  &
+             size(habitat_test2%food%food) +                                  &
+             size(habitat_test3%food%food) +                                  &
+             size(habitat_test4%food%food)
+
+    @assertEqual( t_int1, t_int2, "SUB: Unequal sizes of arrays" )
+
+    ! Test abundance method ....................................................
+
+    @assertEqual(size(habitat_test1%food%food),habitat_test1%food%abundance())
+    @assertEqual(size(habitat_test2%food%food),habitat_test2%food%abundance())
+    @assertEqual(size(habitat_test3%food%food),habitat_test3%food%abundance())
+    @assertEqual(size(habitat_test4%food%food),habitat_test4%food%abundance())
+
+    t_int2 = joined_food_res1%abundance()
+    t_int1 = size(habitat_test1%food%food) +                                  &
+             size(habitat_test2%food%food) +                                  &
+             size(habitat_test3%food%food) +                                  &
+             size(habitat_test4%food%food)
+
+    @assertEqual( t_int1, t_int2, "SUB: abundance not equal to sum size" )
+
+    ! Test abundance method ....................................................
+
+    t_int2 = joined_food_res1%abundance()
+    t_int1 = habitat_test1%food%abundance() +                            &
+             habitat_test2%food%abundance() +                            &
+             habitat_test3%food%abundance() +                            &
+             habitat_test4%food%abundance()
+
+    @assertEqual( t_int1, t_int2, "SUB: abundances not equal" )
+
+    ! Test some values .........................................................
+
+    t_value1 = habitat_test1%food%food(1)%size
+    t_value2 = joined_food_res1%food(1)%size
+    @assertEqual( t_value1, t_value2, "SUB2: First elements not matching" )
+
+    t_value1 = habitat_test2%food%food(1)%size
+    t_value2 = joined_food_res1%food(size(habitat_test1%food%food)+1)%size
+    @assertEqual( t_value1, t_value2, "SUB2: First shift mismatch" )
+
+    ! Test subarrays ..........................................................
+
+    t_array1 = joined_food_res1%food( 1:size(habitat_test1%food%food) )%size
+    t_array2 = habitat_test1%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 1 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+1 :                                     &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food) )%size
+    t_array2 = habitat_test2%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 2 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+1 :       &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food) )%size
+    t_array2 = habitat_test3%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 3 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+1 :                                   &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+size(habitat_test4%food%food) )%size
+    t_array2 = habitat_test4%food%food%size
+    @assertEqual( t_array1, t_array2, "SUB: arrays 4 differ" )
+
+end subroutine test_join_food_res_nonoverlap_list
+
+@test
+subroutine test_join_food_res_nonoverlap_array()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2, habitat_test3, habitat_test4
+    type(FOOD_RESOURCE) :: joined_food_res2
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab1",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab2",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test3%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab3",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test4%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab4",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    ! if (allocated(Global_Habitats_Available)) then
+    !   deallocate(Global_Habitats_Available)
+    !   allocate(Global_Habitats_Available(4))
+    ! else
+    !   allocate(Global_Habitats_Available(4))
+    ! end if
+
+    ! Global_Habitats_Available =                                               &
+    !             [ habitat_test1, habitat_test2, habitat_test3, habitat_test4 ]
+    call assemble( habitat_test1, habitat_test2, habitat_test3, habitat_test4 )
+
+    !---------------------------------------------------------------------------
+    ! Test array-based function.
+    ! Test implicit food resources array, data from Global_Habitats_Available.
+    !---------------------------------------------------------------------------
+
+    joined_food_res2 = join( reindex=.TRUE. )
+
+    t_int1 = size(joined_food_res2%food)
+    t_int2 = size(habitat_test1%food%food) +                                  &
+             size(habitat_test2%food%food) +                                  &
+             size(habitat_test3%food%food) +                                  &
+             size(habitat_test4%food%food)
+
+    ! Test array sizes .........................................................
+
+    @assertEqual( t_int1, t_int2, "FUNC_NOPAR2: Unequal sizes of arrays" )
+
+    t_value1 = habitat_test1%food%food(1)%size
+    t_value2 = joined_food_res2%food(1)%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR2: First elements no match" )
+
+    ! Test some values .........................................................
+
+    t_value1 = habitat_test2%food%food(1)%size
+    t_value2 = joined_food_res2%food(size(habitat_test1%food%food)+1)%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR2: First shift mismatch" )
+
+    t_value1 = habitat_test4%food%food( size(habitat_test4%food%food) )%size
+    t_value2 = joined_food_res2%food( t_int2 )%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR2: Last shift mismatch" )
+
+    ! Test subarrays ..........................................................
+
+    t_array1 = joined_food_res2%food( 1:size(habitat_test1%food%food) )%size
+    t_array2 = habitat_test1%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 1 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+1 :                                     &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food) )%size
+    t_array2 = habitat_test2%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 2 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+1 :       &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food) )%size
+    t_array2 = habitat_test3%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 3 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+1 :                                   &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+size(habitat_test4%food%food) )%size
+    t_array2 = habitat_test4%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 4 differ" )
+
+end subroutine test_join_food_res_nonoverlap_array
+
+@test
+subroutine test_unjoin_food_res_nonoverlap_list()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2, habitat_test3, habitat_test4
+
+    type(FOOD_RESOURCE) :: joined_food_res1
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab1",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab2",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test3%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab3",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test4%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab4",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    !---------------------------------------------------------------------------
+    ! Test list-based subroutine.
+    !---------------------------------------------------------------------------
+
+    call joined_food_res1%join( habitat_test1%food,                           &
+                                habitat_test2%food,                           &
+                                habitat_test3%food,                           &
+                                habitat_test4%food,                           &
+                                reindex=.TRUE. )
+
+    joined_food_res1%food( 1:size(habitat_test1%food%food) )%size = 100.0
+    joined_food_res1%food( size( habitat_test1%food%food)+1:                  &
+                                 size(habitat_test2%food%food) )%size = 200.0
+
+    call joined_food_res1%unjoin( habitat_test1%food,                         &
+                                  habitat_test2%food,                         &
+                                  habitat_test3%food,                         &
+                                  habitat_test4%food,                         &
+                                  reindex=.TRUE. )
+
+    ! Test array sizes .........................................................
+
+    t_int1 = size(joined_food_res1%food)
+    t_int2 = size(habitat_test1%food%food) +                                  &
+             size(habitat_test2%food%food) +                                  &
+             size(habitat_test3%food%food) +                                  &
+             size(habitat_test4%food%food)
+
+    @assertEqual( t_int1, t_int2, "SUB: Unequal sizes of arrays" )
+
+    ! Test some values .........................................................
+
+    t_value1 = habitat_test1%food%food(1)%size
+    t_value2 = joined_food_res1%food(1)%size
+    @assertEqual( t_value1, t_value2, "UJ1: First elements not matching" )
+
+    t_value1 = habitat_test2%food%food(1)%size
+    t_value2 = joined_food_res1%food(size(habitat_test1%food%food)+1)%size
+    @assertEqual( t_value1, t_value2, "UJ1: First shift mismatch" )
+
+    ! Test subarrays ..........................................................
+
+    t_array1 = joined_food_res1%food( 1:size(habitat_test1%food%food) )%size
+    t_array2 = habitat_test1%food%food%size
+    @assertEqual( t_array1, t_array2, "UJ1: arrays 1 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+1 :                                     &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food) )%size
+    t_array2 = habitat_test2%food%food%size
+    @assertEqual( t_array1, t_array2, "UJ1: arrays 2 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+1 :       &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food) )%size
+    t_array2 = habitat_test3%food%food%size
+    @assertEqual( t_array1, t_array2, "UJ1: arrays 3 differ" )
+
+    t_array1 = joined_food_res1%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+1 :                                   &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+size(habitat_test4%food%food) )%size
+    t_array2 = habitat_test4%food%food%size
+    @assertEqual( t_array1, t_array2, "UJ1: arrays 4 differ" )
+
+end subroutine test_unjoin_food_res_nonoverlap_list
+
+@test
+subroutine test_unjoin_food_res_nonoverlap_array()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2, habitat_test3, habitat_test4
+
+    type(FOOD_RESOURCE) :: joined_food_res2
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab1",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab2",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test3%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab3",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test4%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Hab4",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    ! if (allocated(Global_Habitats_Available)) then
+    !   deallocate(Global_Habitats_Available)
+    !   allocate(Global_Habitats_Available(4))
+    ! else
+    !   allocate(Global_Habitats_Available(4))
+    ! end if
+
+    ! Global_Habitats_Available =                                               &
+    !             [ habitat_test1, habitat_test2, habitat_test3, habitat_test4 ]
+    call assemble( habitat_test1, habitat_test2, habitat_test3, habitat_test4 )
+
+    !---------------------------------------------------------------------------
+    ! Test array-based function.
+    ! Test implicit food resources array, data from Global_Habitats_Available.
+    !---------------------------------------------------------------------------
+
+    joined_food_res2 = join( reindex=.TRUE. )
+
+    joined_food_res2%food( 1:size(habitat_test1%food%food) )%size = 200.0
+    joined_food_res2%food( size(habitat_test1%food%food) :                    &
+                           size(habitat_test1%food%food)+200 )%size = 300.0
+
+    call unjoin ( joined_food_res2, reindex=.TRUE. )
+
+    call disassemble(habitat_test1, habitat_test2, habitat_test3, habitat_test4)
+
+    ! Test array sizes .........................................................
+
+    t_int1 = size(joined_food_res2%food)
+    t_int2 = size(habitat_test1%food%food) +                                  &
+             size(habitat_test2%food%food) +                                  &
+             size(habitat_test3%food%food) +                                  &
+             size(habitat_test4%food%food)
+
+    @assertEqual( t_int1, t_int2, "FUNC_NOPAR2: Unequal sizes of arrays" )
+
+    ! Test some values .........................................................
+
+    t_value1 = habitat_test1%food%food(1)%size
+    t_value2 = joined_food_res2%food(1)%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR2: First elements no match" )
+
+    t_value1 = habitat_test2%food%food(1)%size
+    t_value2 = joined_food_res2%food(size(habitat_test1%food%food)+1)%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR2: First shift mismatch" )
+
+    t_value1 = habitat_test4%food%food( size(habitat_test4%food%food) )%size
+    t_value2 = joined_food_res2%food( t_int2 )%size
+    @assertEqual( t_value1, t_value2, "FUNC_NOPAR2: Last shift mismatch" )
+
+    ! Test subarrays ..........................................................
+
+    t_array1 = joined_food_res2%food( 1:size(habitat_test1%food%food) )%size
+    t_array2 = habitat_test1%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 1 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+1 :                                     &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food) )%size
+    t_array2 = habitat_test2%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 2 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+1 :       &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food) )%size
+    t_array2 = habitat_test3%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 3 differ" )
+
+    t_array1 = joined_food_res2%food(                                         &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+1 :                                   &
+        size(habitat_test1%food%food)+size(habitat_test2%food%food)+          &
+          size(habitat_test3%food%food)+size(habitat_test4%food%food) )%size
+    t_array2 = habitat_test4%food%food%size
+    @assertEqual( t_array1, t_array2, "FUNC_NOPAR2: arrays 4 differ" )
+
+end subroutine test_unjoin_food_res_nonoverlap_array
+
+
+
+
+@test
+subroutine test_find_environment()
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_GENOME
+    use THE_NEUROBIO
+    use THE_INDIVIDUAL
+    use THE_POPULATION
+    use THE_ENVIRONMENT
+
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    use LOGGER
+
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2
+
+    type(SPATIAL) :: test_object1, test_object2
+
+    real(SRP) :: t_value1, t_value2
+    real(SRP), allocatable, dimension(:) :: t_array1, t_array2
+
+    integer   :: t_int1, t_int2
+
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Safe",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_DANGER_MIN_COORD(1),   &
+                                               HABITAT_DANGER_MIN_COORD(2),   &
+                                               HABITAT_DANGER_MIN_COORD(3) ), &
+                            coord_max=SPATIAL( HABITAT_DANGER_MAX_COORD(1),   &
+                                               HABITAT_DANGER_MAX_COORD(2),   &
+                                               HABITAT_DANGER_MAX_COORD(3) ), &
+                            label="Dangerous",                                &
+                            predators_number=PREDATORS_NUM_HABITAT_DANGER,    &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_DANGER )
+
+    !Global_Habitats_Available =                                             &
+    !            [ habitat_test1, habitat_test2 ]
+    call assemble( habitat_test1, habitat_test2 )
+
+    !---------------------------------------------------------------------------
+    ! Test find_environment()
+    !---------------------------------------------------------------------------
+    test_object1 = habitat_test1%uniform()
+    test_object2 = habitat_test1%uniform()
+
+    t_int1 = test_object1%find_environment( Global_Habitats_Available )
+    t_int2 = test_object1%find_environment(  )
+    @assertEqual( t_int1, t_int2, "find_environ 1: explicit implicit differ" )
+
+    t_int1 = test_object1%find_environment( Global_Habitats_Available )
+    @assertEqual( 1, t_int1, "find_environ 2: explicit is 1" )
+
+    t_int1 = test_object1%find_environment(  )
+    @assertEqual( 1, t_int1, "find_environ 3: implicit is 1" )
+
+    !---------------------------------------------------------------------------
+    ! Test find_environment()
+    !---------------------------------------------------------------------------
+    test_object1 = habitat_test2%uniform()
+    test_object2 = habitat_test2%uniform()
+
+    t_int1 = test_object1%find_environment( Global_Habitats_Available )
+    t_int2 = test_object1%find_environment(  )
+    @assertEqual( t_int1, t_int2, "find_environ 4: explicit implicit differ" )
+
+    t_int1 = test_object1%find_environment( Global_Habitats_Available )
+    @assertEqual( 2, t_int1, "find_environ 5: explicit is 1" )
+
+    t_int1 = test_object1%find_environment(  )
+    @assertEqual( 2, t_int1, "find_environ 6: implicit is 1" )
+
+    !---------------------------------------------------------------------------
+    ! Test find_environment()
+    !---------------------------------------------------------------------------
+    test_object1 = habitat_test1%uniform()
+    test_object2 = habitat_test2%uniform()
+
+    t_int1 = test_object1%find_environment( Global_Habitats_Available )
+    t_int2 = test_object2%find_environment( Global_Habitats_Available )
+    @assertFalse( t_int1 == t_int2, "find_environ 7: explicit must differ" )
+
+    t_int1 = test_object1%find_environment( )
+    t_int2 = test_object2%find_environment( )
+    @assertFalse( t_int1 == t_int2, "find_environ 8: implicit must differ" )
+
+end subroutine test_find_environment
+
+@test
+subroutine test_surlig_procs()
+
+    use pfunit_mod
+
+    use COMMONDATA
+    use THE_ENVIRONMENT
+
+    real(SRP) :: t_value1, t_value2
+
+
+    Global_Time_Step_Model_Current = 1
+
+    t_value1 = light_surface(Global_Time_Step_Model_Current)
+    t_value2 = light_surface()
+    @assertEqual( t_value1, t_value2 )
+
+    t_value1 = light_surface(Global_Time_Step_Model_Current, is_stochastic=.TRUE.)
+    t_value2 = light_surface(is_stochastic=.TRUE.)
+    @assertFalse( t_value1 == t_value2 )
+
+    ! Check two stochastic values are within 3 sigmas (99.7% CI)
+    @assertEqual( t_value1, t_value2, 4.0*((t_value2 + t_value1)/2.0)*DAYLIGHT_CV )
+
+
+    Global_Time_Step_Model_Current = 100
+
+    t_value1 = light_surface(Global_Time_Step_Model_Current)
+    t_value2 = light_surface()
+    @assertEqual( t_value1, t_value2 )
+
+    t_value1 = light_surface(Global_Time_Step_Model_Current, is_stochastic=.TRUE.)
+    t_value2 = light_surface(is_stochastic=.TRUE.)
+    @assertFalse( t_value1 == t_value2 )
+
+    ! Check two stochastic values are within 3 sigmas (99.7% CI)
+    @assertEqual( t_value1, t_value2, 4.0*((t_value2 + t_value1)/2.0)*DAYLIGHT_CV )
+
+end subroutine test_surlig_procs
+
+@test
+subroutine test_migrate_foods_vertical_direct()
+    use pfunit_mod
+    use COMMONDATA
+    use THE_ENVIRONMENT
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2
+    integer :: step
+    real(SRP), parameter :: TOLER_SD_FACT = 4.0_SRP ! Tolerance in units of S.E.
+    real(SRP) :: toler
+    integer, parameter :: LIFESPAN_LIMIT = 100 ! LIFESPAN is maximum
+    real, dimension(LIFESPAN_LIMIT) :: mean_depth_1, mean_depth_2
+    real, dimension(LIFESPAN_LIMIT) :: sd_depth_1
+
+    mean_depth_1 = MISSING
+    mean_depth_2 = MISSING
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Safe",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_DANGER_MIN_COORD(1),   &
+                                               HABITAT_DANGER_MIN_COORD(2),   &
+                                               HABITAT_DANGER_MIN_COORD(3) ), &
+                            coord_max=SPATIAL( HABITAT_DANGER_MAX_COORD(1),   &
+                                               HABITAT_DANGER_MAX_COORD(2),   &
+                                               HABITAT_DANGER_MAX_COORD(3) ), &
+                            label="Dangerous",                                &
+                            predators_number=PREDATORS_NUM_HABITAT_DANGER,    &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_DANGER )
+
+    !Global_Habitats_Available =                                             &
+    !            [ habitat_test1, habitat_test2 ]
+    call assemble( habitat_test1, habitat_test2 )
+
+    !---------------------------------------------------------------------------
+    ! Test vertical migration()
+    !---------------------------------------------------------------------------
+
+    do step = 1, LIFESPAN_LIMIT
+      Global_Time_Step_Model_Current = step
+      call migrate_food_vertical( Global_Habitats_Available )
+      mean_depth_1(step)=average(Global_Habitats_Available(1)%food%food%dpos())
+      mean_depth_2(step)=average(Global_Habitats_Available(2)%food%food%dpos())
+      sd_depth_1(step) = std_dev(Global_Habitats_Available(1)%food%food%dpos())
+
+      ! Tolerance limit is calculated in units of S.E. of mean depth.
+      toler = TOLER_SD_FACT * sd_depth_1(step) / sqrt(real(FOOD_ABUNDANCE_HABITAT_SAFE,SRP))
+
+      @assertEqual( mean_depth_1(step), mean_depth_2(step), toler )
+    end do
+
+    call CSV_MATRIX_WRITE ( reshape(                                          &
+                             [mean_depth_1,                                   &
+                              mean_depth_2,                                   &
+                              sd_depth_1],                                    &
+                             [LIFESPAN_LIMIT, 3]),                            &
+                             "food_mean_depth_steps_direct.csv",              &
+                             ["HABITAT_1","HABITAT_2","STD_DEV_1"]   )
+
+end subroutine test_migrate_foods_vertical_direct
+
+
+@test
+subroutine test_migrate_foods_vertical_disassemble()
+    use pfunit_mod
+    use COMMONDATA
+    use THE_ENVIRONMENT
+    use BASE_UTILS
+    use BASE_RANDOM
+    use CSV_IO
+    implicit none
+
+    type(HABITAT) :: habitat_test1, habitat_test2
+    integer :: step
+    real(SRP), parameter :: TOLER_SD_FACT = 4.0_SRP ! Tolerance in units of S.E.
+    real(SRP) :: toler
+    integer, parameter :: LIFESPAN_LIMIT = 50  ! LIFESPAN is maximum
+    real, dimension(LIFESPAN_LIMIT) :: mean_depth_1, mean_depth_2, mean_depth_3, mean_depth_4
+    real, dimension(LIFESPAN_LIMIT) :: sd_depth_1
+
+    mean_depth_1 = MISSING
+    mean_depth_2 = MISSING
+    mean_depth_3 = MISSING
+    mean_depth_4 = MISSING
+    Global_Generation_Number_Current = 1
+    Global_Time_Step_Model_Current = 1
+
+    !---------------------------------------------------------------------------
+    ! Tests with the habitat data from the model data, non-overlapping habitats
+    !---------------------------------------------------------------------------
+
+    call habitat_test1%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_SAFE_MIN_COORD(1),     &
+                                               HABITAT_SAFE_MIN_COORD(2),     &
+                                               HABITAT_SAFE_MIN_COORD(3) ),   &
+                            coord_max=SPATIAL( HABITAT_SAFE_MAX_COORD(1),     &
+                                               HABITAT_SAFE_MAX_COORD(2),     &
+                                               HABITAT_SAFE_MAX_COORD(3) ),   &
+                            label="Safe",                                     &
+                            predators_number=PREDATORS_NUM_HABITAT_SAFE,      &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_SAFE )
+
+    call habitat_test2%make(                                                  &
+                            coord_min=SPATIAL( HABITAT_DANGER_MIN_COORD(1),   &
+                                               HABITAT_DANGER_MIN_COORD(2),   &
+                                               HABITAT_DANGER_MIN_COORD(3) ), &
+                            coord_max=SPATIAL( HABITAT_DANGER_MAX_COORD(1),   &
+                                               HABITAT_DANGER_MAX_COORD(2),   &
+                                               HABITAT_DANGER_MAX_COORD(3) ), &
+                            label="Dangerous",                                &
+                            predators_number=PREDATORS_NUM_HABITAT_DANGER,    &
+                            food_abundance=FOOD_ABUNDANCE_HABITAT_DANGER )
+
+    !Global_Habitats_Available =                                             &
+    !            [ habitat_test1, habitat_test2 ]
+    call assemble( habitat_test1, habitat_test2 )
+
+    !---------------------------------------------------------------------------
+    ! Test vertical migration()
+    !---------------------------------------------------------------------------
+
+    do step = 1, LIFESPAN_LIMIT
+      Global_Time_Step_Model_Current = step
+
+      call disassemble( habitat_test1, habitat_test2 )
+      call habitat_test1%food%migrate_vertical()
+      call habitat_test2%food%migrate_vertical()
+      call assemble ( habitat_test1, habitat_test2 )
+
+      mean_depth_1(step)=average(Global_Habitats_Available(1)%food%food%dpos())
+      mean_depth_2(step)=average(Global_Habitats_Available(2)%food%food%dpos())
+
+      mean_depth_3(step)=average(habitat_test1%food%food%dpos())
+      mean_depth_4(step)=average(habitat_test2%food%food%dpos())
+      sd_depth_1(step) = std_dev(habitat_test1%food%food%dpos())
+
+      ! Tolerance limit is calculated in units of S.E. of mean depth.
+      toler = TOLER_SD_FACT * sd_depth_1(step) / sqrt(real(FOOD_ABUNDANCE_HABITAT_SAFE,SRP))
+
+      @assertEqual( mean_depth_1(step), mean_depth_4(step), toler )
+      @assertEqual( mean_depth_2(step), mean_depth_3(step), toler )
+    end do
+
+    call CSV_MATRIX_WRITE ( reshape(                                          &
+                             [mean_depth_1,                                   &
+                              mean_depth_2,                                   &
+                              mean_depth_3,                                   &
+                              mean_depth_4,                                   &
+                              sd_depth_1],                                    &
+                             [LIFESPAN_LIMIT, 5]),                            &
+                             "food_mean_depth_steps_assemble.csv",            &
+                             ["HABITAT_1_DIR   ","HABITAT_2_DIR   ",          &
+                              "HABITAT_1_ASSEMB","HABITAT_2_ASSEMB",          &
+                              "STD_DEV_1       " ]   )
+
+end subroutine test_migrate_foods_vertical_disassemble
+
+
+
+
+
+
+
+
+
+
+

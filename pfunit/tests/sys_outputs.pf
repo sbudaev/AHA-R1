@@ -1,0 +1,52 @@
+@test
+subroutine save_init_tsteps
+  use pfunit_mod
+  use COMMONDATA
+  use THE_EVOLUTION
+  implicit none
+
+  character(len=*), parameter :: OUTPUT_DATA_FILE = "init_tsteps.csv"
+  logical :: status_is_ok
+
+  ! Test if the backend function is working:
+  @assertEqual( PREEVOL_TSTEPS, preevol_steps_adaptive(GENERATIONS), "Disable PREEVOL_TSTEPS_FORCE_DEBUG_ENABLED in tests!" )
+
+  ! Write the adaptive time steps in CSV file:
+  call preevol_steps_adaptive_save_csv(OUTPUT_DATA_FILE, status_is_ok)
+  @assertTrue( status_is_ok, "File write failed" )
+
+end subroutine save_init_tsteps
+
+@test
+subroutine save_init_dynamics_environ
+  use pfunit_mod
+  use COMMONDATA
+  use THE_ENVIRONMENT
+  implicit none
+
+  character(len=:), allocatable :: output_data_file
+  logical :: status_is_ok
+
+  real(SRP), parameter :: MAXDEPTH_ALL =                                     &
+      maxval([ HABITAT_SAFE_MAX_COORD(3), HABITAT_DANGER_MAX_COORD(3) ])
+
+  ! Maximum depth is obtained as a maximum value of all habitats:
+  output_data_file = "init_dynamics_max.csv"
+  call save_dynamics(MAXDEPTH_ALL, output_data_file, status_is_ok)
+  @assertTrue( status_is_ok, "File write failed" )
+
+  ! Half of maximum depth is obtained as a maximum value of all habitats:
+  output_data_file = "init_dynamics_max_halfdepth.csv"
+  call save_dynamics(MAXDEPTH_ALL/2, output_data_file, status_is_ok)
+  @assertTrue( status_is_ok, "File write failed" )
+
+  ! Maximum depth for specific habitats (identical, not really needed)
+  output_data_file = "init_dynamics_safe.csv"
+  call save_dynamics(HABITAT_SAFE_MAX_COORD(3), output_data_file, status_is_ok)
+  @assertTrue( status_is_ok, "File write failed" )
+
+  output_data_file = "init_dynamics_dangerous.csv"
+  call save_dynamics(HABITAT_DANGER_MAX_COORD(3), output_data_file,status_is_ok)
+  @assertTrue( status_is_ok, "File write failed" )
+
+end subroutine save_init_dynamics_environ

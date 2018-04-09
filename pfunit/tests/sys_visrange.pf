@@ -1,0 +1,57 @@
+@test
+subroutine test_visrange_elemental
+
+  use pfunit_mod
+  use COMMONDATA
+  use THE_ENVIRONMENT
+  implicit none
+
+  integer, parameter :: MAXSCALE=100, LEVELS=4
+  real(SRP), dimension(MAXSCALE) :: object_length, object_area
+  real(SRP), dimension(LEVELS,MAXSCALE) :: visrange
+  real(SRP), dimension(LEVELS) :: irradiance
+  integer :: i
+  logical :: csv_file_status
+
+  character(len=LABEL_LENGTH), dimension(2+LEVELS) :: COLNAMES
+
+  object_length = (700.0_SRP/real(MAXSCALE,SRP)) *                            &
+                                    [( real(i,SRP), i=1,size(object_length) )]
+
+  object_area = carea( cm2m( object_length ) )
+
+  irradiance =  [ DAYLIGHT / 2.0_SRP,                                         &
+                  DAYLIGHT / 10.0_SRP,                                        &
+                  DAYLIGHT / 100.0_SRP,                                       &
+                  DAYLIGHT / 1000.0_SRP ]
+
+  ! Build column names for CSV output
+  ! @note All variables involved in CSV output are by array element: 1:LEVELS
+  COLNAMES = [ character(len=LABEL_LENGTH) ::                                 &
+                                "SIZE",                                       &
+                                "AREA_CM",                                    &
+                                "VISRANGE_" // TOSTR(irradiance(1),"(f6.2)"), &
+                                "VISRANGE_" // TOSTR(irradiance(2),"(f6.2)"), &
+                                "VISRANGE_" // TOSTR(irradiance(3),"(f6.2)"), &
+                                "VISRANGE_" // TOSTR(irradiance(4),"(f6.2)")  ]
+
+  do concurrent (i=1:LEVELS)
+    visrange(i,:) = m2cm( visual_range_fast( irradiance = irradiance(i),      &
+                                             prey_area = object_area )   )
+  end do
+
+  ! Save raw data to CSV
+  ! @note All variables involved in CSV output are by array element: 1:LEVELS
+  call CSV_MATRIX_WRITE(reshape( [ object_length,                             &
+                                   object_area,                               &
+                                   visrange(1,:),                             &
+                                   visrange(2,:),                             &
+                                   visrange(3,:),                             &
+                                   visrange(4,:) ],                           &
+                                 [ size(object_length), 2+LEVELS ]  ),        &
+                        "visrange_output_raw_" // ".csv",                     &
+                        COLNAMES , csv_file_status )
+
+  @assertTrue(csv_file_status)
+
+end subroutine test_visrange_elemental

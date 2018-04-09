@@ -1,0 +1,58 @@
+syntax: glob
+#---------------------------------------------------------
+# Don't forget to set ignore properties for this to work:
+#  svn propset svn:ignore -F .svnignore .
+#---------------------------------------------------------
+
+# PDF files are not included into the Mercurial repos
+*.pdf
+
+# Git files
+.git
+.gitignore
+
+# Version information, hg hook 
+# [hooks]
+# commit = hg -q id > .hg.version
+.hg.version
+
+# AHA output
+outputs_*
+BUILD-ERR-GCC.txt
+BUILD_*
+errors.txt
+
+# Swap files
+*.swp
+*~
+
+# exe files
+*.exe
+
+# compiler and Fortran-specific temporary files
+*.mod
+*.o
+*.obj
+
+# automatically generated include files
+*.inc
+
+# codeblocks project files
+*.bmarks
+*.layout
+*.cbp
+bin/*
+obj/*
+
+# Geany project files
+*_PRJ?
+
+# syncthing conflicting files
+*.sync-conflict-*
+
+# Tests and experiments
+ztests/*
+
+# Various lock and tmp files
+.~lock
+

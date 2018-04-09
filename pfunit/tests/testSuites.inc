@@ -1,0 +1,4 @@
+ADD_TEST_SUITE(commondata_suite)
+ADD_TEST_SUITE(mod_environ_suite)
+ADD_TEST_SUITE(sys_outputs_suite)
+ADD_TEST_SUITE(sys_visrange_suite)

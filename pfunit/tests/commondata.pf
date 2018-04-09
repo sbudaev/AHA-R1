@@ -1,0 +1,277 @@
+@test
+subroutine test_autoalloc
+ use COMMONDATA
+ use pfunit_mod
+ implicit none
+ real(SRP), allocatable, dimension(:) :: test_array
+ test_array = [ 1.0_SRP, 2.0_SRP, 3.0_SRP ]
+ @assertTrue(allocated(test_array),"Automatic array allocation not supported")
+ @assertEqual( 3, size(test_array),"Wrong autoallocated array size" )
+end subroutine test_autoalloc
+
+@test
+subroutine test_m2cm()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertEqual(100.0_SRP, m2cm(1.0_SRP))
+end subroutine test_m2cm
+
+@test
+subroutine test_cm2m()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertEqual(1.0_SRP, cm2m(100.0_SRP))
+end subroutine test_cm2m
+
+@test
+subroutine test_average()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  real(SRP), dimension(100) :: normal
+  @assertEqual( average([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]), 3.5_SRP  )
+  @assertEqual( average([1, 2, 3, 4, 5, 6]), 3.5_SRP  )
+  call RNORM_ARRAY(normal, 100.0_SRP, 0.5_SRP)
+  @assertEqual( 100.0_SRP, average(normal), 0.1 )
+end subroutine test_average
+
+@test
+subroutine test_is_maxval()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertTrue( is_maxval(5.0, [1.0, 2.0, 3.0, 4.0, 5.0]) )
+  @assertTrue( is_maxval(5,   [1, 2, 3, 4, 5]) )
+end subroutine test_is_maxval
+
+@test
+subroutine test_is_minval()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertTrue( is_minval(1.0, [1.0, 2.0, 3.0, 4.0, 5.0]) )
+  @assertTrue( is_minval(1,   [1, 2, 3, 4, 5]) )
+end subroutine test_is_minval
+
+@test
+subroutine test_convl2i()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertEqual( conv_l2i(.TRUE.), 1 )
+  @assertEqual( conv_l2i(.FALSE.), 0 )
+  @assertEqual( conv_l2i([.TRUE., .FALSE., .TRUE.]), [1, 0, 1] )
+end subroutine test_convl2i
+
+@test
+subroutine test_convl2r()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertEqual( conv_l2r(.TRUE.),  1.0 )
+  @assertEqual( conv_l2r(.FALSE.), 0.0 )
+  @assertEqual( conv_l2r([.TRUE., .FALSE., .TRUE.]), [1.0, 0.0, 1.0] )
+end subroutine test_convl2r
+
+@test
+subroutine test_within()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertEqual( within( 2.0, 20.0, 30.0), 20.0 )
+  @assertEqual( within(40.0, 20.0, 30.0), 30.0 )
+  @assertEqual( within( 2, 20, 30), 20 )
+  @assertEqual( within(40, 20, 30), 30 )
+end subroutine test_within
+
+@test
+subroutine test_is_within()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+  @assertTrue( is_within(25.0, 20.0, 30.0) )
+  @assertTrue( is_within(29.9, 20.0, 30.0) )
+  @assertTrue( is_within(25, 20, 30) )
+  @assertTrue( is_within(29, 20, 30) )
+  @assertTrue( 29.9 .within. [20.0, 30.0] )
+  @assertTrue( 25   .within. [20, 30] )
+end subroutine test_is_within
+
+@test
+subroutine test_add_to_history()
+  use pfunit_mod
+  use COMMONDATA
+  implicit none
+
+  real(SRP), dimension(9) :: hist
+  integer, dimension(9)   :: ihist
+  real(SRP) :: val
+  integer   :: ival
+  integer :: hist_size
+
+  hist = [ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0  ]
+  val  = 100.0
+  hist_size = size(hist)
+
+  call add_to_history(hist, val)
+  @assertEqual( 100.0, hist(hist_size) )
+  @assertEqual( 2.0, hist(1) )
+
+  call add_to_history(hist, 200.0)
+  @assertEqual( 200.0, hist(hist_size) )
+  @assertEqual( 3.0, hist(1) )
+
+  call add_to_history(hist, 300.0)
+  @assertEqual( 300.0, hist(hist_size) )
+  @assertEqual( 4.0, hist(1) )
+
+  ihist = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+  ival  = 100
+  hist_size = size(ihist)
+
+  call add_to_history(ihist, ival)
+  @assertEqual( 100, ihist(hist_size) )
+  @assertEqual( 2,   ihist(1) )
+
+  call add_to_history(ihist, 200)
+  @assertEqual( 200, ihist(hist_size) )
+  @assertEqual( 3,   ihist(1) )
+
+  call add_to_history(ihist, 300)
+  @assertEqual( 300, ihist(hist_size) )
+  @assertEqual( 4,   ihist(1) )
+
+end subroutine test_add_to_history
+
+@test
+subroutine test_feq()
+  use pfunit_mod
+  use COMMONDATA
+  use BASE_UTILS
+  implicit none
+
+  real(SRP), parameter :: T_TINY_SRP=tiny(1.0_SRP), TINY_FACTOR_S=5.0_SRP
+  real(HRP), parameter :: T_TINY_HRP=tiny(1.0_HRP), TINY_FACTOR_H=5.0_HRP
+  real(SRP), parameter :: EPS_S = epsilon(0.0_SRP)
+  real(HRP), parameter :: EPS_H = epsilon(0.0_HRP)
+  real(SRP) :: ValS
+  real(HRP) :: ValH
+  real(SRP) :: base_zero_s
+  real(HRP) :: base_zero_h
+
+  base_zero_s = TINY_FACTOR_S * T_TINY_SRP
+  base_zero_h = TINY_FACTOR_H * T_TINY_HRP
+
+  !---------------------------------------------------------------------------
+  ! Operator A .feq. B
+  !---------------------------------------------------------------------------
+  @assertTrue( is_near_zero(0.0_SRP) )
+  @assertTrue( is_near_zero(0.0_HRP) )
+
+  @assertTrue( is_near_zero(1.0_SRP, 1.0000001_SRP), "Big num, coarse compare")
+  @assertTrue( is_near_zero(1.0_HRP, 1.0000001_HRP), "Big num, coarse compare")
+
+  @assertFalse( is_near_zero( EPS_S ), "Epsilon much larger def. tolerance" )
+  @assertFalse( is_near_zero( EPS_H ), "Epsilon much larger def. tolerance" )
+
+  ValS = base_zero_s * 0.8_SRP
+  @assertTrue(is_near_zero(ValS),"Near-zero: "//TOSTR(ValS)//">"//TOSTR(base_zero_s))
+
+  ValS = base_zero_s * 1.1_SRP
+  @assertFalse(is_near_zero(ValS),"Non-zero: "//TOSTR(ValS)//">"//TOSTR(base_zero_s))
+
+  ValH = base_zero_h * 0.8_HRP
+  @assertTrue( is_near_zero(ValH), "Near-zero HRP" )
+
+  ValH = base_zero_h * 1.1_HRP
+  @assertFalse( is_near_zero(ValH), "Non-zero HRP" )
+
+  @assertTrue(  100.0_SRP .feq. 100.0_SRP)
+  @assertTrue(  100.0_SRP .feq. 100.0_SRP + EPS_S, ".feq. +" // TOSTR(EPS_S) )
+  @assertFalse( 100.0_SRP .feq. 100.1_SRP)
+
+  @assertTrue(  100.0_HRP .feq. 100.0_HRP)
+  @assertTrue(  100.0_HRP .feq. 100.0_HRP + EPS_H )
+  @assertFalse( 100.0_HRP .feq. 100.1_HRP)
+
+  @assertTrue( float_equal( 100.0_SRP, 100.0_SRP) )
+  @assertTrue( float_equal( 100.0_SRP, 100.0_SRP + EPS_S) )
+  @assertFalse( float_equal(100.0_SRP, 100.1_SRP) )
+
+  @assertTrue( float_equal( 100.0_HRP, 100.0_HRP) )
+  @assertTrue( float_equal( 100.0_HRP, 100.0_HRP + EPS_H) )
+  @assertFalse( float_equal(100.0_HRP, 100.1_HRP) )
+
+end subroutine test_feq
+
+@test
+subroutine test_approx()
+  use pfunit_mod
+  use COMMONDATA
+  use BASE_UTILS
+  implicit none
+
+  real(SRP), parameter :: T_TINY_SRP=tiny(1.0_SRP), TINY_FACTOR_S=5.0_SRP
+  real(HRP), parameter :: T_TINY_HRP=tiny(1.0_HRP), TINY_FACTOR_H=5.0_HRP
+  real(SRP), parameter :: EPS_S = epsilon(0.0_SRP)
+  real(HRP), parameter :: EPS_H = epsilon(0.0_HRP)
+  real(SRP) :: ValS
+  real(HRP) :: ValH
+  real(SRP) :: base_zero_s
+  real(HRP) :: base_zero_h
+
+  base_zero_s = TINY_FACTOR_S * T_TINY_SRP
+  base_zero_h = TINY_FACTOR_H * T_TINY_HRP
+
+  !---------------------------------------------------------------------------
+  ! Operator A .approx. B
+  !---------------------------------------------------------------------------
+  @assertTrue( T_TINY_SRP .approx. ZERO )
+  @assertTrue( T_TINY_HRP .approx. epsilon(0.0_HRP) )
+
+  @assertTrue( 0.001_SRP .approx. 0.001_SRP + TOLERANCE_HIGH_DEF_SRP * 0.5_SRP )
+  @assertTrue( 0.001_HRP .approx. 0.001_HRP + TOLERANCE_HIGH_DEF_HRP * 0.5_HRP )
+
+  @assertFalse( 0.001_SRP .approx. 0.001_SRP + TOLERANCE_HIGH_DEF_SRP * 1.0_SRP )
+  @assertFalse( 0.001_HRP .approx. 0.001_HRP + TOLERANCE_HIGH_DEF_HRP * 1.0_HRP )
+
+  @assertFalse( T_TINY_SRP .approx. ZERO + TOLERANCE_HIGH_DEF_SRP )
+  @assertFalse( T_TINY_HRP .approx. epsilon(0.0_HRP) + TOLERANCE_HIGH_DEF_HRP )
+
+end subroutine test_approx
+
+@test
+subroutine test_std_dev()
+  use pfunit_mod
+  use COMMONDATA
+
+  real(SRP), parameter :: TOLER = ZERO * 5.0  ! Tolerance value
+
+  real(SRP), parameter, dimension(7) :: ARRAY1 =                              &
+                              [ 10.0, 2.0, 38.0, 23.0, 38.0, 23.0, 21.0 ]
+  real(SRP), parameter :: MEAN1 = 22.142857142857_SRP
+  real(SRP), parameter :: STDDEV1 = 13.284434142115_SRP
+
+  real(SRP), parameter, dimension(7) :: ARRAY2 =                              &
+                              [ 1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7  ]
+  real(SRP), parameter :: MEAN2 = 4.4_SRP
+  real(SRP), parameter :: STDDEV2 = 2.3762715894162_SRP
+
+  @assertEqual( size(ARRAY1), 7 )
+
+  @assertEqual( average(ARRAY1), MEAN1 )
+  @assertEqual( std_dev(ARRAY1), STDDEV1, TOLER )
+
+  @assertEqual( std_dev([MISSING,MISSING,MISSING]), MISSING  )
+  @assertEqual( std_dev([MISSING,MISSING,MISSING], undef_ret_null=.TRUE.), 0.0 )
+
+  @assertEqual( average(ARRAY2), MEAN2 )
+  @assertEqual( std_dev(ARRAY2), STDDEV2, TOLER )
+
+
+end subroutine test_std_dev
+
+
+
