@@ -72,10 +72,11 @@
 !! [README_NF](http://ahamodel.uib.no/doxydoc/md__r_e_a_d_m_e__n_f.html) .
 !!
 !> @section intro_version Version information
-!! This is the model version information parsed from the main Subversion
-!! repository https://svn.uib.no/aha-fortran or Bitbucket Mercurial-based
-!! repository https://bitbucket.org/ahaproject/hedg2_01 (the latter is
-!! currently used just as a mirror of the Subversion branch).
+!! This is the Reference Model R1 version information parsed from the main
+!! Subversion repository
+!! https://subversion.uib.no/repos/aha-fortran/tags/AHA_R/R1 or
+!! Bitbucket Mercurial-based repository https://bitbucket.org/teg_uib/aha-r1
+!! (the latter is currently used just as a mirror of the Subversion branch).
 !! @verbatim
 !! $Id$
 !! @endverbatim
@@ -603,8 +604,10 @@
 !!
 !> @subsection intro_webresources_model Links for more information
 !> **AHA/BEAST Resources:**
-!> - AHA Model repository mirror on Bitbucket:
-!!   https://bitbucket.org/ahaproject/hedg2_01
+!> - AHA Reference Model R1 repository mirror on Bitbucket:
+!!   https://bitbucket.org/teg_uib/aha-r1
+!! - AHA Reference Model R1 repository mirror on GitHub:
+!!   https://github.com/sbudaev/AHA-R1
 !! - Full documentation for the AHA Model in PDF:
 !!   http://ahamodel.uib.no/doxydoc/refman.pdf
 !! - HEDTOOLS repository mirror on Bitbucket:
