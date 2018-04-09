@@ -86,6 +86,11 @@ or these, if Mercurial is used (here local folders are capital):
     hg clone ssh://hg@bitbucket.org/ahaproject/hedg2_01 HEDG2_01
     hg clone ssh://hg@bitbucket.org/ahaproject/hedtools HEDTOOLS
 
+or still these, if GitHub git-based repo is used:
+
+    git clone git@github.com:sbudaev/AHA-R1.git
+    hg clone ssh://hg@bitbucket.org/ahaproject/hedtools HEDTOOLS
+
 Thus, the layout of the working directory after `HEDG2_01` and `HEDTOOLS` are
 downloaded is like this:
 
