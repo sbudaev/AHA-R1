@@ -78,18 +78,18 @@ or `hg clone ssh://...` if Mercurial is used -- check out
 With the current main Subversion repository, getting the code requires these
 commands:
 
-    svn co https://subversion.uib.no/repos/aha-fortran/branches/budaev/HEDG2_01
-    svn co https://subversion.uib.no/repos/aha-fortran/branches/budaev/HEDTOOLS
+    svn co https://subversion.uib.no/repos/aha-fortran/tags/AHA_R/R1
+    svn co https://subversion.uib.no/repos/aha-fortran/tags/HEDTOOLS/1.1
 
 or these, if Mercurial is used (here local folders are capital):
 
-    hg clone ssh://hg@bitbucket.org/ahaproject/hedg2_01 HEDG2_01
-    hg clone ssh://hg@bitbucket.org/ahaproject/hedtools HEDTOOLS
+    hg clone https://bitbucket.org/teg_uib/aha-r1 AHA-R1
+    hg clone ssh://hg@bitbucket.org/teg_uib/hedtools HEDTOOLS
 
 or still these, if GitHub git-based repo is used:
 
     git clone git@github.com:sbudaev/AHA-R1.git
-    hg clone ssh://hg@bitbucket.org/ahaproject/hedtools HEDTOOLS
+    git clone git@github.com:sbudaev/HEDTOOLS.git
 
 Thus, the layout of the working directory after `HEDG2_01` and `HEDTOOLS` are
 downloaded is like this:
