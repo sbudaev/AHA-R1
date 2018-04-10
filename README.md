@@ -91,22 +91,22 @@ or still these, if GitHub git-based repo is used:
     git clone git@github.com:sbudaev/AHA-R1.git
     git clone git@github.com:sbudaev/HEDTOOLS.git
 
-Thus, the layout of the working directory after `HEDG2_01` and `HEDTOOLS` are
+Thus, the layout of the working directory after `AHA-R1` and `HEDTOOLS` are
 downloaded is like this:
 
     workdir
      |
-     |-- HEDG2_01
+     |-- AHA-R1
      |    |-- dox
      |    |-- pfunit
      |    `-- tools
      |
      `-- HEDTOOLS
 
-Building the AHA Model is done in the model directory (here `HEDG2_01`). If
+Building the AHA Model is done in the model directory (here `AHA-R1`). If
 you use the terminal, go there with
 
-    cd HEDG2_01
+    cd AHA-R1
 
 Here are the main commands to build and run the AHA Model:
 
