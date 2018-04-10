@@ -169,8 +169,9 @@ General conclusions
   efficient capture of food items, avoidance of predators and avoidance of
   conspecifics (reducing food competition).*
 
-Reference list
---------------
+[sect1]
+References
+----------
 
 - Aksnes, D. L., & Utne, A. C. W. (1997). A revised model of visual range in
   fish. Sarsia, 82(2), 137–147. http://doi.org/10.1080/00364827.1997.10413647
