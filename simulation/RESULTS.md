@@ -98,7 +98,9 @@ to eat out almost all of the food available in the environment. This is
 illustrated by the following plot that shows the percentage of food items
 in the environment that were still available (not eaten) at the end of each
 generation. This plot also shows the average perceived number of food items
-by the agents.
+by the agents at the end of each generation (note that the fluctuations
+in perception are caused by differences in the illumination level due to
+unequal number of time steps across all generations).
 
 ![Fig. 5](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-05.svg)
 
@@ -119,17 +121,20 @@ first half of the life cycle.
 
 With each new generation, predation success (numbe of agents killed per time
 step) reduced. Thus, the agents evolved more efficient predator avoidance
-tactics. The predator perception by the agents (number of predators that they
-see) also showed a reducing pattern, but there was a significant sigmoidal
-fluctuation. This might have several different interpretations.
+tactics. The predator perception by the agents (number of predators that
+they see) at the last time step of each generation also showed a reducing
+pattern, but there was a significant sinusoidal fluctuation because of
+different illumination levels at the end of each generation (the number of
+time steps was unequal).
 
 ![Fig. 7](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-07.svg)
 
 ### Response to conspecifics
 
 The agents evolved avoidance of conspecifics, presumably to reduce food
-competition. Predator and conspecific perception had similar cyclic patterns
-that probably reflect changes of visibility and depth.
+competition. Predator and conspecific perception at the end of each generation
+had similar cyclic patterns that reflect changes of visibility due to unequal
+number of time steps.
 
 ![Fig. 8](http://ahamodel.uib.no/otherinfo/desc_r1/plot-r1-08.svg)
 
