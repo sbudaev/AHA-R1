@@ -1,8 +1,8 @@
 Simulation Results for R1
 =========================
 Sergey Budaev <sergey.budaev@uib.no>
-v1.0, April 2018:
-Initial release.
+v1.0.1, 11 April 2017:
+small corrections, add DOI and repos.
 
 :description: Simulation Results for R1
 
@@ -19,6 +19,17 @@ system provides physical gradients, environmental dynamics and significant
 stochasticity. Decision making and action selection in the fish agents in
 R1 is based on elementary self-awareness: the ability of the agent to assess
 its own emotional state and use this information for decision making.
+
+*Repositories:* +
+Bitbucket:
+https://bitbucket.org/teg_uib/aha-r1[https://bitbucket.org/teg_uib/aha-r1] +
+GitHub:
+https://github.com/sbudaev/AHA-R1[https://github.com/sbudaev/AHA-R1]
+
+// *Version R1.1.0* https://zenodo.org/record/1215790[doi:10.5281/zenodo.1215790]
+// SVG: https://zenodo.org/badge/DOI/10.5281/zenodo.1215790.svg
+image:zenodo.1215790.svg["doi:10.5281/zenodo.1215790",
+link="https://zenodo.org/record/1215790[doi:10.5281/zenodo.1215790"]
 
 :numbered:
 
