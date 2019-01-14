@@ -107,7 +107,7 @@ downloaded is like this:
 Building the AHA Model is done in the model directory (here `HEDG2_01`). If
 you use the terminal, go there with
 
-    cd HEDG2_01
+    cd AHA-R1
 
 Here are the main commands to build and run the AHA Model:
 
