@@ -9512,9 +9512,7 @@ contains ! ........ implementation of procedures for this level ................
     !> Third, calculate the visual range for the predator for detecting the
     !! fish prey object defined by the `prey_spatial` spatial object.
     !! It is assumed here that the predator is much larger than the agent
-    !! prey. Therefore, the distance sufficient to detect the predator by
-    !! the prey is normally (much) longer than the distance required by the
-    !! predator to detect the prey.
+    !! prey.
     !! @image html img_doxygen_predator_visrange.svg
     !! @image latex img_doxygen_predator_visrange.eps "Visual ranges for the agent and the predator" width=14cm
     !! At the figure above, @f$ VR_{p} @f$ is the visual range for the agent

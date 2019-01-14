@@ -72,13 +72,12 @@
 !! [README_NF](http://ahamodel.uib.no/doxydoc/md__r_e_a_d_m_e__n_f.html) .
 !!
 !> @section intro_version Version information
-!! This is the Reference Model R1 version information parsed from the main
-!! Subversion repository
-!! https://subversion.uib.no/repos/aha-fortran/tags/AHA_R/R1 or
-!! Bitbucket Mercurial-based repository https://bitbucket.org/teg_uib/aha-r1
-!! (the latter is currently used just as a mirror of the Subversion branch).
+!! This is the model version information parsed from the main Subversion
+!! repository https://svn.uib.no/aha-fortran or Bitbucket Mercurial-based
+!! repository https://bitbucket.org/ahaproject/hedg2_01 (the latter is
+!! currently used just as a mirror of the Subversion branch).
 !! @verbatim
-!! $Id$
+!! $Id: m_common.f90 851df748b488 2018/02/17 20:25:54 sergey $
 !! @endverbatim
 !! Version information is also saved as two variables that can be passed to
 !! the logger (see commondata::logger_init()) and outputs and file names:
@@ -604,10 +603,8 @@
 !!
 !> @subsection intro_webresources_model Links for more information
 !> **AHA/BEAST Resources:**
-!> - AHA Reference Model R1 repository mirror on Bitbucket:
-!!   https://bitbucket.org/teg_uib/aha-r1
-!! - AHA Reference Model R1 repository mirror on GitHub:
-!!   https://github.com/sbudaev/AHA-R1
+!> - AHA Model repository mirror on Bitbucket:
+!!   https://bitbucket.org/ahaproject/hedg2_01
 !! - Full documentation for the AHA Model in PDF:
 !!   http://ahamodel.uib.no/doxydoc/refman.pdf
 !! - HEDTOOLS repository mirror on Bitbucket:
@@ -1592,7 +1589,7 @@ module COMMONDATA
   !!          Note that *Mercurial* has a **keyword** extension that works
   !!          similar to Subversion and should auto-update the keywords.
   character(len=*), parameter, public ::                                      &
-      SVN_VERSION_STRING = "$Revision$"
+      SVN_VERSION_STRING = "$Revision: 851df748b488 $"
 
   !> **Subversion** or *Mercurial* revision number that is parsed by
   !! `commondata::parse_svn_version()`. It is shorter than

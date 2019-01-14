@@ -24,7 +24,7 @@
 !!          .
 !! File version:
 !! @verbatim
-!! $Id$
+!! $Id: mod_drv.f90 8a93c01ba9c1 2017/12/17 07:18:19 sergey $
 !! @endverbatim
 program AHA_MODEL_DRIVER
 

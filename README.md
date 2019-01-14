@@ -78,35 +78,30 @@ or `hg clone ssh://...` if Mercurial is used -- check out
 With the current main Subversion repository, getting the code requires these
 commands:
 
-    svn co https://subversion.uib.no/repos/aha-fortran/tags/AHA_R/R1
-    svn co https://subversion.uib.no/repos/aha-fortran/tags/HEDTOOLS/1.1
+    svn co https://tegsvn.uib.no/svn/tegsvn/branches/budaev/HEDG2_01
+    svn co https://tegsvn.uib.no/svn/tegsvn/branches/budaev/HEDTOOLS
 
 or these, if Mercurial is used (here local folders are capital):
 
-    hg clone https://bitbucket.org/teg_uib/aha-r1 AHA-R1
-    hg clone ssh://hg@bitbucket.org/teg_uib/hedtools HEDTOOLS
+    hg clone ssh://hg@bitbucket.org/ahaproject/hedg2_01 HEDG2_01
+    hg clone ssh://hg@bitbucket.org/ahaproject/hedtools HEDTOOLS
 
-or still these, if GitHub git-based repo is used:
-
-    git clone git@github.com:sbudaev/AHA-R1.git
-    git clone git@github.com:sbudaev/HEDTOOLS.git
-
-Thus, the layout of the working directory after `AHA-R1` and `HEDTOOLS` are
+Thus, the layout of the working directory after `HEDG2_01` and `HEDTOOLS` are
 downloaded is like this:
 
     workdir
      |
-     |-- AHA-R1
+     |-- HEDG2_01
      |    |-- dox
      |    |-- pfunit
      |    `-- tools
      |
      `-- HEDTOOLS
 
-Building the AHA Model is done in the model directory (here `AHA-R1`). If
+Building the AHA Model is done in the model directory (here `HEDG2_01`). If
 you use the terminal, go there with
 
-    cd AHA-R1
+    cd HEDG2_01
 
 Here are the main commands to build and run the AHA Model:
 
@@ -115,7 +110,7 @@ Here are the main commands to build and run the AHA Model:
 - Delete all build-related, data and temporary files `make distclean`;
 - Get a quick help from the make system: `make help`.
 
-See [Makefile](http://ahamodel.uib.no/doxydoc/Makefile.html) for build
+See [Makefile](https://ahamodel.uib.no/doxydoc/_makefile.html) for build
 configuration. To get more information on the GNU Make see
 [AHA Modelling Tools Manual](http://ahamodel.uib.no/doc/ar01s13.html),
 [Using Microsoft Visual Studio](http://ahamodel.uib.no/doc/ar01s14.html) and
@@ -137,11 +132,11 @@ and are listed below.
 
 ## Makefile: GNU Make build configuration ##
 
-[Makefile](http://ahamodel.uib.no/doxydoc/Makefile.html) to build the model
+[Makefile](https://ahamodel.uib.no/doxydoc/_makefile.html) to build the model
 executable from the source code.
 
 This is a standard GNU Make
-[Makefile](http://ahamodel.uib.no/doxydoc/Makefile.html) to build the model from
+[Makefile](https://ahamodel.uib.no/doxydoc/_makefile.html) to build the model from
 the sources. It also automatically generates some platform and
 compiler specific include files for the `BASE_RANDOM` and the
 IEEE math modules. See
@@ -149,7 +144,7 @@ IEEE math modules. See
 section for details.
 
 In addition to the GNU Make, this
-[Makefile](http://ahamodel.uib.no/doxydoc/Makefile.html) also depends on the
+[Makefile](https://ahamodel.uib.no/doxydoc/_makefile.html) also depends on the
 `grep`, `cut`, `sed` and `awk` utilities that are installed on any
 Unix/Linux system, but usually absent on Windows. For Windows
 they can be obtained from several locations on the web, e.g.
@@ -163,7 +158,7 @@ for more information.
   `ifort`.
 - **HOST_HPC_ROOT** is the hostname to run the model executable in the
   HPC batch mode. If the hostname the
-  [Makefile](http://ahamodel.uib.no/doxydoc/Makefile.html) is called in is this
+  [Makefile](https://ahamodel.uib.no/doxydoc/_makefile.html) is called in is this
   system, `make run` starts a new batch task. Otherwise, the model
   executable is just started normally.
 - **SRC** is the name of the main source code (can be several files).
@@ -194,5 +189,5 @@ for more information.
   error. In such a case, use the Unix `rm` tool provided by Cygwin.
 .
 
-The source code of the [Makefile](http://ahamodel.uib.no/doxydoc/Makefile.html)
+The source code of the [Makefile](https://ahamodel.uib.no/doxydoc/_makefile.html)
 contains many other parameters and is well documented throughout.

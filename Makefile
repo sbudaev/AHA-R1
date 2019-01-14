@@ -162,7 +162,9 @@ WINRM := rm -fr
 #       data go to fort.1. More testing is needed, -flto disabled so far.
 GF_STATIC = -static-libgfortran -static -static-libgcc
 GF_TRAPS = -ffpe-trap=
-GF_RCHECKS = -Wall -fbounds-check -fsanitize=address -static-libasan
+GF_RCHECKS = -Wall -fbounds-check
+# Memory leaks sanitize checks for GCC using libasan, work on Linux and OSX
+GF_MEMCHECK = -fsanitize=address -static-libasan
 #GF_FFLAGS = $(GF_STATIC) $(GF_TRAPS) $(GF_RCHECKS) -O3
 GF_FFLAGS = -O3 -march=native -funroll-loops -fforce-addr $(GF_STATIC)
 GF_FFLAGS_WINDOWS = -O3 -funroll-loops -fforce-addr $(GF_STATIC)
@@ -304,8 +306,11 @@ K := $(foreach exec,$(REQUIRED_EXECS),\
 
 # Check if we build on Windows platform with GNU gfortran Compiler. Compiler
 # may differ in this case. Notably, GCC -flto option crashes compiler.
+# also, memory sanitizer GF_MEMCHECK is disabled on Windows
 ifeq ($(PLATFORM_TYPE)$(FC),Windowsgfortran)
 	GF_FFLAGS:=$(GF_FFLAGS_WINDOWS)
+else
+	GF_RCHECKS := $(GF_RCHECKS) $(GF_MEMCHECK)
 endif
 
 # Check if we build on Windows platform with Intel Compiler. It is specific in
